@@ -1,5 +1,5 @@
 
-import os
+import os, json, random
 from dotenv import load_dotenv
 
 load_dotenv()  # take environment variables from .env.
@@ -31,7 +31,7 @@ service_context = ServiceContext.from_defaults(
 # max_chunk_overlap = 20
 # prompt_helper = PromptHelper(max_input_size, num_output)
 
-
+# write to 
 # storage_context = StorageContext.from_defaults()
 # data = SimpleDirectoryReader(input_dir="C:\\dev\\llama_index\\examples\\dk").load_data()
 # index = VectorStoreIndex.from_documents(
@@ -60,10 +60,67 @@ st.set_page_config(
 	page_icon="fav.png",  # String, anything supported by st.image, or None.
 )
 
+
+#get random question
+# Run the test again with the standardized JSON file
+
+class RandomQuestionGenerator:
+    def __init__(self, file_path):
+        with open(file_path, "r") as f:
+            self.data = json.load(f)
+
+    def get_random_question(self):
+        while True:
+            # Select a random 'title' block
+            random_title_block = random.choice(self.data)
+            
+            # Check if the selected block has 'paragraphs' and that it's not empty
+            if 'paragraphs' in random_title_block and random_title_block['paragraphs']:
+                # Select a random 'paragraphs' block
+                random_paragraph = random.choice(random_title_block['paragraphs'])
+
+                # Check if the selected paragraph has questions
+                if 'questions' in random_paragraph and random_paragraph['questions']:
+                    # Select a random question from the 'questions' list in the selected block
+                    random_question = random.choice(random_paragraph['questions'])
+
+                    # Return the 'question' value from the selected dictionary if it is a dictionary
+                    # Otherwise, return the string directly
+                    return random_question['question']
+
+
+# Create an instance of the class
+generator = RandomQuestionGenerator("data/merged_fix.json")
+# Generate a random question
+random_question = generator.get_random_question()
+
+
 st.title('What would you like to ask the book "Algorithms and Automation"?')
 query = st.text_input(
      'Examples: "What is a prototype, and how is it relevant to philosophical discussions?"', ""
+    #  f'Examples: "{random_question}"', f'{random_question}'
 )
+
+
+import streamlit as st
+
+footer="""<style>
+.footer {
+position: fixed;
+left: 0;
+bottom: 0;
+width: 100%;
+background-color: white;
+color: black;
+text-align: center;
+}
+</style>
+<div class="footer">
+<p>for questions, write to algorithms.automation[at]gmail by <a  href="https://www.anonnete.net/" target="_blank">denisa kera</a></p>
+</div>
+"""
+st.markdown(footer,unsafe_allow_html=True)
+
 
 # If the 'Submit' button is clicked
 if st.button("Submit"):
