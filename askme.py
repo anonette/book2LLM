@@ -31,20 +31,29 @@ service_context = ServiceContext.from_defaults(
 # max_chunk_overlap = 20
 # prompt_helper = PromptHelper(max_input_size, num_output)
 
-# write to 
-# storage_context = StorageContext.from_defaults()
-# data = SimpleDirectoryReader(input_dir="C:\\dev\\llama_index\\examples\\dk").load_data()
-# index = VectorStoreIndex.from_documents(
-#     data, 
-#     service_context=service_context,         
-#     storage_context=storage_context, 
-#     show_progress=True
-# )
-# storage_context.persist(persist_dir=f'./storage/myth')
+import argparse
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--mode', choices=['write', 'read'], help='Mode to run the script in: write or read', default='read')
+args = parser.parse_args()
 
-storage_context = StorageContext.from_defaults(persist_dir=f'./storage/myth')
-index = load_index_from_storage(storage_context=storage_context)
+if args.mode == 'write':
+    # Code to write to VectorStoreIndex
+    storage_context = StorageContext.from_defaults()
+    data = SimpleDirectoryReader(input_dir="C:\\dev\\llama_index\\examples\\dk").load_data()
+    index = VectorStoreIndex.from_documents(
+        data, 
+        service_context=service_context,         
+        storage_context=storage_context, 
+        show_progress=True
+    )
+    storage_context.persist(persist_dir=f'./storage/myth')
+
+elif args.mode == 'read':
+    # Code to read from VectorStoreIndex
+    storage_context = StorageContext.from_defaults(persist_dir=f'./storage/myth')
+    index = load_index_from_storage(storage_context=storage_context)
+
 
 # Configure chat engine
 chat_engine = index.as_chat_engine(
