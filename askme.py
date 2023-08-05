@@ -91,18 +91,39 @@ class RandomQuestionGenerator:
 
 # Create an instance of the class
 generator = RandomQuestionGenerator("data/merged_fix.json")
-# Generate a random question
-random_question = generator.get_random_question()
+# # Generate a random question
+# random_question = generator.get_random_question()
+
+# Initialize Session State if it doesn't exist
+if 'random_question' not in st.session_state:
+    st.session_state['random_question'] = generator.get_random_question()
 
 
 st.title('What would you like to ask the book "Algorithms and Automation"?')
-query = st.text_input(
-     'Examples: "What is a prototype, and how is it relevant to philosophical discussions?"', ""
-    #  f'Examples: "{random_question}"', f'{random_question}'
-)
 
+query = st.text_area(
+    f'enter a question or submit one from the archives:', 
+    '',
+    placeholder=st.session_state["random_question"]    )
 
-import streamlit as st
+col1, col2 , col3, col4= st.columns(4)
+
+# If the 'Submit' button is clicked
+if col1.button("Submit"):
+    if not query.strip():
+        query = st.session_state['random_question']
+
+    try:
+        response = chat_engine.query(query)
+        st.success(f"Question: {query}\n\n\nAnswer: {response}")
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
+    
+
+# If the 'Generate' button is clicked
+if col4.button("random question"):
+    # Generate a new random question for the next run
+    st.session_state['random_question'] = generator.get_random_question()
 
 footer="""<style>
 .footer {
@@ -120,15 +141,3 @@ text-align: center;
 </div>
 """
 st.markdown(footer,unsafe_allow_html=True)
-
-
-# If the 'Submit' button is clicked
-if st.button("Submit"):
-    if not query.strip():
-        st.error(f"Please provide the search query.")
-    else:
-        try:
-            response = chat_engine.query(query)
-            st.success(response)
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
