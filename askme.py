@@ -12,25 +12,39 @@ from llama_index.llms import ChatMessage
 # Load environment variables
 load_dotenv()
 
-# Define constants
-PERSIST_DIR = './storage/myth'
-INPUT_DIR = "C:\\dev\\llama_index\\examples\\dk"
-DATA_FILE = "data/merged_fix.json"
+# constants
 PAGE_TITLE = "denisaBot"
 PAGE_ICON = "fav.png"
+PERSIST_DIR = './storage/myth'
+INPUT_DIR = "C:\\dev\\llama_index\\examples\\dk"
+QUESTION_FILE = "data/merged_fix.json"
 
 # Initialize ServiceContext
-service_context = ServiceContext.from_defaults(llm=OpenAI(model="gpt-3.5-turbo", temperature=0))
+service_context = ServiceContext.from_defaults(
+    llm=OpenAI(
+        model="gpt-3.5-turbo", 
+        temperature=0)
+    )
 
 # Handle command line arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--mode', choices=['write', 'read'], help='Mode to run the script in: write or read', default='read')
+parser.add_argument(
+    '--mode', 
+    choices=['write', 'read'], 
+    help='Mode to run the script in: write or read', 
+    default='read'
+    )
 args = parser.parse_args()
 
 def write_to_index():
     storage_context = StorageContext.from_defaults()
     data = SimpleDirectoryReader(input_dir=INPUT_DIR).load_data()
-    index = VectorStoreIndex.from_documents(data, service_context=service_context, storage_context=storage_context, show_progress=True)
+    index = VectorStoreIndex.from_documents(
+        data, 
+        service_context=service_context, 
+        storage_context=storage_context, 
+        show_progress=True
+        )
     storage_context.persist(persist_dir=PERSIST_DIR)
     return index
 
@@ -46,7 +60,12 @@ index = write_to_index() if args.mode == 'write' else read_from_index()
 chat_engine = index.as_chat_engine(chat_mode="react", verbose=True)
 
 # Define Streamlit app settings
-st.set_page_config(layout="centered", initial_sidebar_state="auto", page_title=PAGE_TITLE, page_icon=PAGE_ICON)
+st.set_page_config(
+    layout="centered", 
+    initial_sidebar_state="auto", 
+    page_title=PAGE_TITLE, 
+    page_icon=PAGE_ICON
+    )
 
 class RandomQuestionGenerator:
     def __init__(self, file_path):
@@ -63,7 +82,7 @@ class RandomQuestionGenerator:
                     return random_question['question']
 
 # Initialize RandomQuestionGenerator
-generator = RandomQuestionGenerator(DATA_FILE)
+generator = RandomQuestionGenerator(QUESTION_FILE)
 
 # Initialize Session State if it doesn't exist
 if 'random_question' not in st.session_state:
@@ -71,7 +90,11 @@ if 'random_question' not in st.session_state:
 
 # Define Streamlit layout
 st.title('What would you like to ask the book "Algorithms and Automation"?')
-query = st.text_area('enter a question or submit one from the archives:', '', placeholder=st.session_state["random_question"])
+query = st.text_area(
+    'enter a question or submit one from the archives:', 
+    '', 
+    placeholder=st.session_state["random_question"]
+    )
 
 # Define Streamlit buttons
 col1, col2 , col3, col4= st.columns(4)
