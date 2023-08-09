@@ -1,3 +1,6 @@
 venv/
 .env
 preprocess/
+chunks/
+preprocessed/jsons/
+app/__pycache__/

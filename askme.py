@@ -16,8 +16,8 @@ load_dotenv()
 PAGE_TITLE = "denisaBot"
 PAGE_ICON = "fav.png"
 PERSIST_DIR = './storage/myth'
-INPUT_DIR = "C:\\dev\\llama_index\\examples\\dk"
-QUESTION_FILE = "data/merged_fix.json"
+INPUT_DIR = "data/"
+QUESTION_FILE = "questions/merged_fix.json"
 
 # Initialize ServiceContext
 service_context = ServiceContext.from_defaults(
