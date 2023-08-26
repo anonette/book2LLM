@@ -1,7 +1,4 @@
-import os
-import json
-import random
-import argparse
+import os, json, random, argparse
 import streamlit as st
 from dotenv import load_dotenv
 from langchain.llms.openai import OpenAI
@@ -9,8 +6,7 @@ from llama_index import (PromptHelper, load_index_from_storage, ServiceContext,
                          StorageContext, SimpleDirectoryReader, VectorStoreIndex)
 from llama_index.llms import ChatMessage
 
-# Load environment variables
-load_dotenv()
+#load_dotenv() gave me issues so iplaced the keys in .bashrc
 
 # constants
 PAGE_TITLE = "denisaBot"
