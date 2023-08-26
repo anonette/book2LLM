@@ -19,7 +19,8 @@ QUESTION_FILE = "questions/merged_fix.json"
 service_context = ServiceContext.from_defaults(
     llm=OpenAI(
         model="gpt-3.5-turbo", 
-        temperature=0)
+        temperature=0,
+        streaming=False)
     )
 
 # Handle command line arguments
@@ -49,11 +50,47 @@ def read_from_index():
     index = load_index_from_storage(storage_context=storage_context)
     return index
 
-# Switch between write and read mode
-index = write_to_index() if args.mode == 'write' else read_from_index()
+class RandomQuestionGenerator:
+    def __init__(self, file_path):
+        with open(file_path, "r") as f:
+            data = json.load(f)
+        
+        # Flatten the JSON structure to get a list of all questions
+        self.all_questions = [
+            q['question'] 
+            for title_block in data 
+            if 'paragraphs' in title_block
+            for paragraph in title_block['paragraphs'] 
+            if 'questions' in paragraph 
+            for q in paragraph['questions']
+        ]
+        
+        # Convert the list to a set for non-repetitive random selection
+        self.questions_set = set(self.all_questions)
+
+    def get_random_question(self):
+        if not self.questions_set:
+            # Refill the set if all questions have been asked
+            self.questions_set = set(self.all_questions)
+        
+        question = random.choice(list(self.questions_set))
+        self.questions_set.remove(question)
+        return question
+    
+# If 'generator' not in session state, initialize it
+if 'generator' not in st.session_state:
+    st.session_state['generator'] = RandomQuestionGenerator(QUESTION_FILE)
+    
+# If 'index' not in session state, load it
+if 'index' not in st.session_state:
+    # Switch between write and read mode
+    st.session_state['index'] = write_to_index() if args.mode == 'write' else read_from_index()
 
 # Configure chat engine
-chat_engine = index.as_chat_engine(chat_mode="react", verbose=True)
+chat_engine = st.session_state['index'].as_chat_engine(
+    chat_mode="react", 
+    verbose=True
+    )
 
 # Define Streamlit app settings
 st.set_page_config(
@@ -63,27 +100,11 @@ st.set_page_config(
     page_icon=PAGE_ICON
     )
 
-class RandomQuestionGenerator:
-    def __init__(self, file_path):
-        with open(file_path, "r") as f:
-            self.data = json.load(f)
 
-    def get_random_question(self):
-        while True:
-            random_title_block = random.choice(self.data)
-            if 'paragraphs' in random_title_block and random_title_block['paragraphs']:
-                random_paragraph = random.choice(random_title_block['paragraphs'])
-                if 'questions' in random_paragraph and random_paragraph['questions']:
-                    random_question = random.choice(random_paragraph['questions'])
-                    return random_question['question']
 
 # Initialize RandomQuestionGenerator
-generator = RandomQuestionGenerator(QUESTION_FILE)
-
-# Initialize Session State if it doesn't exist
-if 'random_question' not in st.session_state:
-    st.session_state['random_question'] = generator.get_random_question()
-
+# generator = RandomQuestionGenerator(QUESTION_FILE)
+st.session_state
 # Define Streamlit layout
 st.title('What would you like to ask the book "Algorithms and Automation"?')
 query = st.text_area(
@@ -97,7 +118,7 @@ col1, col2 , col3, col4= st.columns(4)
 
 if col1.button("Submit"):
     if not query.strip():
-        query = st.session_state['random_question']
+        query = st.session_state['generator'].get_random_question
     try:
         response = chat_engine.query(query)
         st.success(f"Question: {query}\n\n\nAnswer: {response}")
@@ -105,17 +126,18 @@ if col1.button("Submit"):
         st.error(f"An error occurred: {e}")
 
 if col4.button("random question"):
-    st.session_state['random_question'] = generator.get_random_question()
+    st.session_state['random_question'] = st.session_state['generator'].get_random_question()
+    st.experimental_rerun()
 
 footer="""<style>
 .footer {
-position: fixed;
-left: 0;
-bottom: 0;
-width: 100%;
-background-color: white;
-color: black;
-text-align: center;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: white;
+    color: black;
+    text-align: center;
 }
 </style>
 <div class="footer">
