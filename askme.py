@@ -1,4 +1,3 @@
-#load_dotenv() gave me issues so iplaced the keys in .bashrc
 
 
 
@@ -7,14 +6,17 @@ import json
 import random
 import argparse
 import streamlit as st
-from dotenv import load_dotenv
+from dotenv import load_dotenv,find_dotenv
+import openai
 from langchain.llms.openai import OpenAI
 from llama_index import (PromptHelper, load_index_from_storage, ServiceContext,
                          StorageContext, SimpleDirectoryReader, VectorStoreIndex)
 from llama_index.llms import ChatMessage
 
 # Load environment variables
-load_dotenv()
+load_dotenv(find_dotenv())
+api_key = os.getenv('OPENAI_API_KEY')
+openai.api_key = api_key
 
 # Define constants
 PAGE_TITLE = "denisaBot"
