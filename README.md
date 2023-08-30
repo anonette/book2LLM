@@ -11,7 +11,7 @@ python -m venv venv
 source venv/bin/activate
 
 #install deps
-pip install -r requirements
+pip install -r requirements.txt
 
 ```
 #### run
