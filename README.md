@@ -4,7 +4,7 @@ various scripts to extract meaning
 <img src="./dk_qr.svg" width="155em">
 goto https://anonette.net/denisaBot/
 
-setup
+#### setup
 ```bash
 #start virtual env
 python -m venv venv
@@ -13,7 +13,9 @@ source venv/bin/activate
 #install deps
 pip install -r requirements
 
-#run
+```
+#### run
+```bash
 streamlit run askme.py
 ```
 
