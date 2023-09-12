@@ -6,7 +6,6 @@ import json
 import random
 import argparse
 import streamlit as st
-from dotenv import load_dotenv,find_dotenv
 import openai
 from langchain.llms.openai import OpenAI
 from llama_index import (PromptHelper, load_index_from_storage, ServiceContext,
