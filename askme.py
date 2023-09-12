@@ -21,6 +21,14 @@ PERSIST_DIR = './storage/myth'
 INPUT_DIR = "data/"
 QUESTION_FILE = "questions/merged_fix.json"
 
+# Define Streamlit app settings
+st.set_page_config(
+    layout="centered",
+    initial_sidebar_state="auto",
+    page_title=PAGE_TITLE,
+    page_icon=PAGE_ICON
+    )
+
 # Initialize ServiceContext
 service_context = ServiceContext.from_defaults(
     llm=OpenAI(
@@ -52,6 +60,7 @@ def write_to_index():
     storage_context.persist(persist_dir=PERSIST_DIR)
     return index
 
+@st.cache_resource
 def read_from_index():
     storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
     index = load_index_from_storage(storage_context=storage_context)
@@ -90,27 +99,20 @@ if 'generator' not in st.session_state:
     st.session_state['generator'] = RandomQuestionGenerator(QUESTION_FILE)
 
 # If 'index' not in session state, load it
-if 'index' not in st.session_state:
-    # Switch between write and read mode
-    st.session_state['index'] = write_to_index() if args.mode == 'write' else read_from_index()
+
+index = write_to_index() if args.mode == 'write' else read_from_index()
 
 # Get the current query from session state or set a placeholder if it's not yet set
 if 'current_query' not in st.session_state:
     st.session_state['current_query'] = st.session_state['generator'].get_random_question()
 
 # Configure chat engine
-chat_engine = st.session_state['index'].as_chat_engine(
+chat_engine = index.as_chat_engine(
     chat_mode="react",
     verbose=True
     )
 
-# Define Streamlit app settings
-st.set_page_config(
-    layout="centered",
-    initial_sidebar_state="auto",
-    page_title=PAGE_TITLE,
-    page_icon=PAGE_ICON
-    )
+
 
 # Define Streamlit layout
 st.title('What would you like to ask the book "Algorithms and Automation"?')
