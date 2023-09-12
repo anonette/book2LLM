@@ -115,7 +115,7 @@ chat_engine = index.as_chat_engine(
 
 
 # Define Streamlit layout
-st.title('What would you like to ask the book "Algorithms and Automation"?')
+st.title('What would ask the book "Algorithms and Automation"?')
 
 # Get the current query from session state or set a placeholder if it's not yet set
 current_query = st.session_state.get('current_query', '')
