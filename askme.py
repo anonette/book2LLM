@@ -65,7 +65,7 @@ def read_from_index():
     storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
     index = load_index_from_storage(storage_context=storage_context)
     return index
-
+@st.cache_resource
 class RandomQuestionGenerator:
     def __init__(self, file_path):
         with open(file_path, "r") as f:
@@ -93,10 +93,7 @@ class RandomQuestionGenerator:
         self.questions_set.remove(question)
         return question
 
-# If 'generator' not in session state, initialize it
-if 'generator' not in st.session_state:
-    # Initialize RandomQuestionGenerator
-    st.session_state['generator'] = RandomQuestionGenerator(QUESTION_FILE)
+generator = RandomQuestionGenerator(QUESTION_FILE)
 
 # If 'index' not in session state, load it
 
@@ -104,7 +101,7 @@ index = write_to_index() if args.mode == 'write' else read_from_index()
 
 # Get the current query from session state or set a placeholder if it's not yet set
 if 'current_query' not in st.session_state:
-    st.session_state['current_query'] = st.session_state['generator'].get_random_question()
+    st.session_state['current_query'] = generator.get_random_question()
 
 # Configure chat engine
 chat_engine = index.as_chat_engine(
@@ -142,7 +139,7 @@ if col1.button("Submit"):
         st.error(f"An error occurred: {e}")
 
 if col4.button("random question"):
-    st.session_state['current_query'] = st.session_state['generator'].get_random_question() # Update the session state with a new random question
+    st.session_state['current_query'] = generator.get_random_question() # Update the session state with a new random question
     st.experimental_rerun()
 
 footer="""<style>
