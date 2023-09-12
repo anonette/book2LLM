@@ -9,8 +9,7 @@ from llama_index import (PromptHelper, load_index_from_storage, ServiceContext,
                          StorageContext, SimpleDirectoryReader, VectorStoreIndex)
 from llama_index.llms import ChatMessage
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from .streamlit/secrets.json
 
 # constants
 PAGE_TITLE = "denisaBot"

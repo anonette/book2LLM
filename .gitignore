@@ -4,3 +4,4 @@ preprocess/
 chunks/
 preprocessed/jsons/
 app/__pycache__/
+secrets.toml
