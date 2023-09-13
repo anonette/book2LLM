@@ -19,7 +19,7 @@ PAGE_TITLE = "denisaBot"
 PAGE_ICON = "fav.png"
 PERSIST_DIR = './storage/myth'
 INPUT_DIR = "data/"
-QUESTION_FILE = "questions/merged_fix.json"
+QUESTION_FILE = "questions/extracted_questions.json"
 
 # Define Streamlit app settings
 st.set_page_config(
@@ -67,19 +67,16 @@ def read_from_index():
     return index
 @st.cache_resource
 class RandomQuestionGenerator:
-    def __init__(self, file_path):
+    def __init__(self, file_path, category="academic"):
         with open(file_path, "r") as f:
             data = json.load(f)
 
-        # Flatten the JSON structure to get a list of all questions
-        self.all_questions = [
-            q['question']
-            for title_block in data
-            if 'paragraphs' in title_block
-            for paragraph in title_block['paragraphs']
-            if 'questions' in paragraph
-            for q in paragraph['questions']
-        ]
+        # Check if the provided category exists in the JSON data
+        if category not in data:
+            raise ValueError(f"The category '{category}' does not exist. Choose either 'academic' or 'layman'.")
+
+        # Retrieve the questions based on the category
+        self.all_questions = data[category]
 
         # Convert the list to a set for non-repetitive random selection
         self.questions_set = set(self.all_questions)
@@ -93,10 +90,10 @@ class RandomQuestionGenerator:
         self.questions_set.remove(question)
         return question
 
-generator = RandomQuestionGenerator(QUESTION_FILE)
+# Create an instance for academic questions
+generator = RandomQuestionGenerator(QUESTION_FILE, "academic")
 
 # If 'index' not in session state, load it
-
 index = write_to_index() if args.mode == 'write' else read_from_index()
 
 # Get the current query from session state or set a placeholder if it's not yet set
@@ -112,7 +109,12 @@ chat_engine = index.as_chat_engine(
 
 
 # Define Streamlit layout
-st.title('What would ask the book "Algorithms and Automation"?')
+# st.title('"Algorithms and Automation": A Responsive Knowledge Base')
+st.markdown('''
+            # "Algorithms and Automation": 
+            ## A Generative Knowledge Base
+            '''
+            )
 
 # Get the current query from session state or set a placeholder if it's not yet set
 current_query = st.session_state.get('current_query', '')
